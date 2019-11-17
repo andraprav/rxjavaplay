@@ -68,14 +68,14 @@ class PostController {
     }
 
     @GetMapping(value = "/jokes", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public Flux<Post> getJokesString() {
+    public Flux<Post> getJokes() {
         return Flux.fromStream(
-                Stream.generate(this::getJokeString)
+                Stream.generate(this::getJoke)
                         .peek(post -> logger.info(post.getContent())))
                 .delayElements(Duration.ofSeconds(1));
     }
 
-    private Post getJokeString() {
+    private Post getJoke() {
         try {
             Thread.sleep(3000);
         } catch (InterruptedException e) {
