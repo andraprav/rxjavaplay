@@ -1,6 +1,8 @@
 package com.cegeka.rxjavaplay.annotation;
 
 import com.cegeka.rxjavaplay.annotation.dao.Employee;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -9,8 +11,15 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.time.Duration;
+import java.util.Random;
+import java.util.stream.Stream;
+
 @RestController
 public class EmployeeResource {
+
+    Logger logger = LoggerFactory.getLogger(EmployeeResource.class);
+
     @Autowired
     private EmployeeService employeeService;
 
@@ -26,7 +35,7 @@ public class EmployeeResource {
     public ResponseEntity<Mono<Employee>> findById(@PathVariable("id") Integer id) {
         Mono<Employee> e = employeeService.findById(id);
         HttpStatus status = e != null ? HttpStatus.OK : HttpStatus.NOT_FOUND;
-        return new ResponseEntity<Mono<Employee>>(e, status);
+        return new ResponseEntity<>(e, status);
     }
 
     @RequestMapping(value = "/name/{name}", method = RequestMethod.GET)
@@ -37,9 +46,10 @@ public class EmployeeResource {
 
     @RequestMapping(method = RequestMethod.GET, produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     @ResponseBody
-    public Flux<Employee> findAll() {
-        Flux<Employee> emps = employeeService.findAll();
-        return emps;
+    public Flux<Employee> findAll() throws InterruptedException {
+        return employeeService
+                .findAll()
+                .delayElements(Duration.ofSeconds(1));
     }
 
     @RequestMapping(value = "/update", method = RequestMethod.PUT)
@@ -54,4 +64,20 @@ public class EmployeeResource {
         employeeService.delete(id).subscribe();
     }
 
+
+    private double getRandomNumber() {
+        return Math.random();
+    }
+
+    @GetMapping(value = "/temperatures", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Flux<Integer> getTemperature() {
+        Random r = new Random();
+        int low = 0;
+        int high = 50;
+        return Flux.fromStream(Stream.generate(() -> r.nextInt(high - low) + low)
+                .map(String::valueOf)
+                .peek(msg -> logger.info(msg)))
+                .map(Integer::valueOf)
+                .delayElements(Duration.ofSeconds(1));
+    }
 }

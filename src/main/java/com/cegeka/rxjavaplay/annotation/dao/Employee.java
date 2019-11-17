@@ -14,7 +14,32 @@ public class Employee {
     String name;
     long salary;
 
-    //Getters and setters
+    public int getId() {
+        return id;
+    }
+
+    public Employee setId(int id) {
+        this.id = id;
+        return this;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public Employee setName(String name) {
+        this.name = name;
+        return this;
+    }
+
+    public long getSalary() {
+        return salary;
+    }
+
+    public Employee setSalary(long salary) {
+        this.salary = salary;
+        return this;
+    }
 
     @Override
     public String toString() {

@@ -8,7 +8,7 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 
 
-@Component
+//@Component
 public class GreetingHandler {
 
     public Mono<ServerResponse> hello(ServerRequest request) {

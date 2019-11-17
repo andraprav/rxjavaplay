@@ -1,19 +1,20 @@
 package com.cegeka.rxjavaplay.annotation;
 
-import com.cegeka.rxjavaplay.EmployeeRepository;
+import com.cegeka.rxjavaplay.annotation.dao.EmployeeRepository;
 import com.cegeka.rxjavaplay.annotation.dao.Employee;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import javax.inject.Inject;
+
 @Service
 public class EmployeeServiceImpl implements EmployeeService {
 
-    @Autowired
-    EmployeeRepository employeeRepo;
+    @Inject
+    private EmployeeRepository employeeRepo;
 
     public void create(Employee e) {
         employeeRepo.save(e).subscribe();

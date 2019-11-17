@@ -1,10 +1,7 @@
-package com.cegeka.rxjavaplay;
+package com.cegeka.rxjavaplay.annotation.dao;
 
-import com.cegeka.rxjavaplay.annotation.dao.Employee;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
-
-
 import reactor.core.publisher.Flux;
 
 public interface EmployeeRepository extends ReactiveMongoRepository<Employee, Integer> {
