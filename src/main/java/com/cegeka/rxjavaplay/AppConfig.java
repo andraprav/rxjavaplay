@@ -13,7 +13,6 @@ import static org.springframework.context.annotation.FilterType.ANNOTATION;
 @ComponentScan(
         value = AppConfig.BASE_PACKAGE,
         excludeFilters = @ComponentScan.Filter(type = ANNOTATION, value = Configuration.class))
-//@EntityScan(basePackages = AppConfig.BASE_PACKAGE)
 public class AppConfig {
     static final String BASE_PACKAGE = "com.cegeka.rxjavaplay.annotation.dao";
 

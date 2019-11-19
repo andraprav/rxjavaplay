@@ -21,56 +21,57 @@ import static org.springframework.http.HttpStatus.NO_CONTENT;
 @RequestMapping(value = "/posts")
 class PostController {
 
-    private final PostRepository posts;
+    private final PostRepository postRepository;
 
     Logger logger = LoggerFactory.getLogger(PostController.class);
 
     @Autowired
     private RestTemplate restTemplate;
 
-    public PostController(PostRepository posts) {
-        this.posts = posts;
+    public PostController(PostRepository postRepository) {
+        this.postRepository = postRepository;
     }
 
     @GetMapping(produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<Post> all() {
-        return this.posts
+        return this.postRepository
                 .findAll()
                 .delayElements(Duration.ofSeconds(1));
     }
 
     @GetMapping("/{id}")
     public Mono<Post> get(@PathVariable("id") String id) {
-        return this.posts.findById(id);
+        return this.postRepository.findById(id);
     }
 
     @PostMapping
     public Mono<Post> create(@RequestBody Post post) {
-        return this.posts.save(post);
+        return this.postRepository.save(post);
     }
 
     @PutMapping("/{id}")
     public Mono<Post> update(@PathVariable("id") String id, @RequestBody Post post) {
-        return this.posts.findById(id)
+        return this.postRepository.findById(id)
                 .map(p -> {
                     p.setTitle(post.getTitle());
                     p.setContent(post.getContent());
 
                     return p;
                 })
-                .flatMap(this.posts::save);
+                .flatMap(this.postRepository::save);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(NO_CONTENT)
     public Mono<Void> delete(@PathVariable("id") String id) {
-        return this.posts.deleteById(id);
+        return this.postRepository.deleteById(id);
     }
 
     @GetMapping(value = "/jokes", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<Post> getJokes() {
         return Flux.fromStream(
-                Stream.generate(this::getJoke)
+                Stream
+                        .generate(this::getJoke)
                         .peek(post -> logger.info(post.getContent())))
                 .delayElements(Duration.ofSeconds(1));
     }
