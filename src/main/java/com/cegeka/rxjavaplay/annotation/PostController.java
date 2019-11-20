@@ -8,12 +8,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;
-import java.util.stream.Stream;
 
 import static org.springframework.http.HttpStatus.NO_CONTENT;
 
@@ -26,7 +25,7 @@ class PostController {
     Logger logger = LoggerFactory.getLogger(PostController.class);
 
     @Autowired
-    private RestTemplate restTemplate;
+    private WebClient webClient;
 
     public PostController(PostRepository postRepository) {
         this.postRepository = postRepository;
@@ -69,25 +68,24 @@ class PostController {
 
     @GetMapping(value = "/jokes", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<Post> getJokes() {
-        return Flux.fromStream(
-                Stream
-                        .generate(this::getJoke)
-                        .peek(post -> logger.info(post.getContent())))
-                .delayElements(Duration.ofSeconds(1));
+        return Flux.interval(Duration.ofSeconds(3))
+                .flatMap(this::getJoke);
+
     }
 
-    private Post getJoke() {
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            System.out.println(e.getStackTrace());
-        }
-        String joke = null;
-        while (joke == null) {
-            joke = restTemplate.getForObject(
-                    "https://sv443.net/jokeapi/category/Programming",
-                    Joke.class).getJoke();
-        }
-        return new Post("", joke);
+    private Mono<Post> getJoke(long id) {
+        return webClient
+                .get()
+                .uri("https://sv443.net/jokeapi/category/Programming")
+//                .accept(MediaType.TEXT_EVENT_STREAM)
+                .retrieve()
+                .bodyToMono(Joke.class)
+                .filter(joke -> joke.getJoke() != null)
+                .map(joke1 -> getPost(id, joke1));
+    }
+
+    private Post getPost(long id, Joke joke) {
+        logger.info(joke.getJoke());
+        return new Post(String.valueOf(id), joke.getJoke());
     }
 }
